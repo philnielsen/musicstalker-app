@@ -1,6 +1,7 @@
 'use strict'
 
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
+import Authentication from './authentication'
 
 /**
  * Set `__static` path to static files in production
@@ -20,9 +21,10 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    height: 563,
+    height: 600,
     useContentSize: true,
-    width: 1000
+    width: 800,
+    title: 'Music Stalker'
   })
 
   mainWindow.loadURL(winURL)
@@ -44,6 +46,15 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
   }
+})
+
+ipcMain.on('musicstalker-app:authentication:start', (e, data) => {
+  // eslint-disable-next-line no-new
+  new Authentication(data.service, (tokens) => {
+    Authentication.addToken(tokens, () => {
+      e.sender.send('musicstalker-app:authentication:done', tokens)
+    })
+  })
 })
 
 /**
